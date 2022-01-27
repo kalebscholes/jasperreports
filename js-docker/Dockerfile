@@ -2,7 +2,7 @@
 # This file is subject to the license terms contained
 # in the license file that is distributed with this file.
 
-ARG TOMCAT_BASE_IMAGE=tomcat:9.0.31-jdk11-openjdk
+ARG TOMCAT_BASE_IMAGE=tomcat:9.0.54-jdk11-openjdk
 FROM ${TOMCAT_BASE_IMAGE}
 
 ARG DN_HOSTNAME
@@ -20,14 +20,15 @@ ARG SMTP_EMAIL
 ARG SMTP_USER
 ARG SMTP_PASSWORD
 
+ENV JRS_HOME /usr/src/jasperreports-server
 ENV PHANTOMJS_VERSION ${PHANTOMJS_VERSION:-2.1.1}
 ENV DN_HOSTNAME ${DN_HOSTNAME:-localhost.localdomain}
 ENV KS_PASSWORD ${KS_PASSWORD:-changeit}
 ENV JRS_HTTPS_ONLY ${JRS_HTTPS_ONLY:-false}
 ENV HTTP_PORT ${HTTP_PORT:-8080}
 ENV HTTPS_PORT ${HTTPS_PORT:-8443}
-ENV POSTGRES_JDBC_DRIVER_VERSION ${POSTGRES_JDBC_DRIVER_VERSION:-42.2.14}
-ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-7.5.0}
+ENV POSTGRES_JDBC_DRIVER_VERSION ${POSTGRES_JDBC_DRIVER_VERSION:-42.3.1}
+ENV JASPERREPORTS_SERVER_VERSION ${JASPERREPORTS_SERVER_VERSION:-8.0.0}
 ENV EXPLODED_INSTALLER_DIRECTORY ${EXPLODED_INSTALLER_DIRECTORY:-resources/jasperreports-server-cp-$JASPERREPORTS_SERVER_VERSION-bin}
 ENV JASPERREPORTS_EMAIL ${JASPERREPORTS_EMAIL:-noreply@jasperserver.tld}
 ENV SMTP_HOST ${SMTP_HOST:-smtp.mailtrap.io}
@@ -44,45 +45,35 @@ RUN mkdir -p /usr/src/jasperreports-server
 
 # get the WAR and license
 COPY ${EXPLODED_INSTALLER_DIRECTORY}/jasperserver $CATALINA_HOME/webapps/jasperserver/
-COPY ${EXPLODED_INSTALLER_DIRECTORY}/TIB* /usr/src/jasperreports-server/
-
-# Ant
-COPY ${EXPLODED_INSTALLER_DIRECTORY}/apache-ant /usr/src/jasperreports-server/apache-ant/
+COPY ${EXPLODED_INSTALLER_DIRECTORY}/TIB* ${JRS_HOME}
 
 # js-ant script, Ant XMLs and support in bin
-COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/js-ant /usr/src/jasperreports-server/buildomatic/
-COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/build.xml /usr/src/jasperreports-server/buildomatic/
-COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/bin/*.xml /usr/src/jasperreports-server/buildomatic/bin/
-COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/bin/app-server /usr/src/jasperreports-server/buildomatic/bin/app-server/
-COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/bin/groovy /usr/src/jasperreports-server/buildomatic/bin/groovy/
+COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic ${JRS_HOME}/buildomatic/
 
-# supporting resources
-COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/conf_source /usr/src/jasperreports-server/buildomatic/conf_source/
-COPY ${EXPLODED_INSTALLER_DIRECTORY}/buildomatic/target /usr/src/jasperreports-server/buildomatic/target/
+# Ant
+COPY ${EXPLODED_INSTALLER_DIRECTORY}/apache-ant ${JRS_HOME}/apache-ant/
 
 COPY scripts /
 
 # Copy Fonts Extension lib
 COPY assets/libs $CATALINA_HOME/webapps/jasperserver/WEB-INF/lib/
 
-RUN echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null && \
-    chmod +x /*.sh && \
+RUN chmod +x /*.sh && \
     /installPackagesForJasperserver-ce.sh > /dev/null && \
-	echo "finished installing packages" && \
+    echo "finished installing packages" && \
     rm -rf $CATALINA_HOME/webapps/ROOT && \
-	mkdir $CATALINA_HOME/webapps/ROOT && \
-	mv /index.jsp $CATALINA_HOME/webapps/ROOT/ && \
+#    mkdir $CATALINA_HOME/webapps/ROOT && \
+#    mv /index.jsp $CATALINA_HOME/webapps/ROOT/ && \
     rm -rf $CATALINA_HOME/webapps/docs && \
     rm -rf $CATALINA_HOME/webapps/examples && \
     rm -rf $CATALINA_HOME/webapps/host-manager && \
     rm -rf $CATALINA_HOME/webapps/manager && \
-	cp -R /buildomatic /usr/src/jasperreports-server/buildomatic && \
-	rm /installPackagesForJasperserver*.sh && rm -rf /buildomatic && \
-    chmod +x /usr/src/jasperreports-server/buildomatic/js-* && \
-    chmod +x /usr/src/jasperreports-server/apache-ant/bin/* && \
-    java -version && \
-	wget "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_DRIVER_VERSION}.jar" \
-        -P /usr/src/jasperreports-server/buildomatic/conf_source/db/postgresql/jdbc --no-verbose && \
+#    cp -R /buildomatic ${JRS_HOME}/buildomatic && \
+    rm /installPackagesForJasperserver*.sh && rm -rf /buildomatic && \
+    chmod +x ${JRS_HOME}/buildomatic/js-* && \
+    chmod +x ${JRS_HOME}/apache-ant/bin/* && \
+    wget "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_DRIVER_VERSION}.jar" \
+        -P ${JRS_HOME}/buildomatic/conf_source/db/postgresql/jdbc --no-verbose --no-check-certificate && \
     keytool -genkey -alias self_signed -dname "CN=${DN_HOSTNAME}" \
         -storetype PKCS12 \
         -storepass "${KS_PASSWORD}" \

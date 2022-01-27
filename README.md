@@ -1,4 +1,4 @@
-# JasperReports Server 7.5.0 Community Edition for Docker
+# JasperReports Server 8.0.0 Community Edition for Docker
 
 ## Introduction
 
@@ -8,8 +8,7 @@ This is a customized version of the [js-docker](https://github.com/TIBCOSoftware
 
 ## Installation
 
-**Step 1:** Download JasperReports Server 7.5.0 Community Edition by running the following script:
-
+**Step 1:** Download JasperReports Server 8.0.0 Community Edition by running the following script:
 ```bash
 $ ./jrs-download.sh
 ```

@@ -3,7 +3,7 @@ set -e
 
 DIST_PATH=js-docker/resources
 
-DIST_VER=7.5.0
+DIST_VER=8.0.0
 DIST_NAME=TIB_js-jrs-cp_${DIST_VER}_bin.zip
 DIST_DIR=${DIST_NAME%.*}
 DIST_URL="https://sourceforge.net/projects/jasperserver/files/JasperServer/JasperReports%20Server%20Community%20edition%20${DIST_VER}/${DIST_NAME}/download"
