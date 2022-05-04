@@ -61,15 +61,15 @@ COPY assets/libs $CATALINA_HOME/webapps/jasperserver/WEB-INF/lib/
 RUN chmod +x /*.sh && \
     /installPackagesForJasperserver-ce.sh > /dev/null && \
     echo "finished installing packages" && \
-    rm -rf $CATALINA_HOME/webapps/ROOT && \
+#    rm -rf $CATALINA_HOME/webapps/ROOT && \
 #    mkdir $CATALINA_HOME/webapps/ROOT && \
 #    mv /index.jsp $CATALINA_HOME/webapps/ROOT/ && \
     rm -rf $CATALINA_HOME/webapps/docs && \
     rm -rf $CATALINA_HOME/webapps/examples && \
     rm -rf $CATALINA_HOME/webapps/host-manager && \
     rm -rf $CATALINA_HOME/webapps/manager && \
-#    cp -R /buildomatic ${JRS_HOME}/buildomatic && \
-    rm /installPackagesForJasperserver*.sh && rm -rf /buildomatic && \
+    rm /installPackagesForJasperserver*.sh && \
+    rm -rf /buildomatic && \
     chmod +x ${JRS_HOME}/buildomatic/js-* && \
     chmod +x ${JRS_HOME}/apache-ant/bin/* && \
     wget "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_DRIVER_VERSION}.jar" \

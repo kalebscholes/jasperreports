@@ -1,3 +1,4 @@
+.idea/
 init/*.sql
 init/*.sh
 smtp.env
